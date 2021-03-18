@@ -1,4 +1,4 @@
-export class GraphqlMiniApp {
+class GraphqlMiniApp {
   interceptors = {
     request: {
       use: (fn, onError) => {
@@ -140,6 +140,8 @@ export class GraphqlMiniApp {
 /**
  * 定义graphql请求对象
  */
-export function gql(chunks) {
+function gql(chunks) {
   return chunks[0]
 }
+
+export {gql,GraphqlMiniApp,}
