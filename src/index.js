@@ -144,4 +144,8 @@ function gql(chunks) {
   return chunks[0]
 }
 
-export {gql,GraphqlMiniApp,}
+module.exports = {
+  gql:gql,
+  GraphqlMiniApp:GraphqlMiniApp
+}
+
