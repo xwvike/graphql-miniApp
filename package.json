@@ -1,12 +1,25 @@
 {
   "name": "graphql-miniapp",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "./src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "xwvike",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/XWVIKE/graphql-miniApp.git"
+  },
   "license": "MIT",
+  "keywords": [
+    "graphql",
+    "miniapp",
+    "wechat"
+  ],
+  "bugs": {
+    "url": "https://github.com/XWVIKE/graphql-miniApp/issues"
+  },
+  "homepage": "https://github.com/XWVIKE/graphql-miniApp",
   "devDependencies": {}
 }
