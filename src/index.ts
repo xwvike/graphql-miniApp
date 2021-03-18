@@ -1,5 +1,6 @@
-class GraphqlMiniApp {
-  interceptors = {
+// @ts-nocheck
+export class GraphqlMiniApp {
+    interceptors = {
     request: {
       use: (fn, onError) => {
         this._addInterceptors(fn, onError, 'request')
@@ -140,12 +141,8 @@ class GraphqlMiniApp {
 /**
  * 定义graphql请求对象
  */
-function gql(chunks) {
+export function gql(chunks) {
   return chunks[0]
 }
 
-module.exports = {
-  gql:gql,
-  GraphqlMiniApp:GraphqlMiniApp
-}
 
