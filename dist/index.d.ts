@@ -49,7 +49,7 @@ export declare class GraphqlMiniApp {
     /**
      * 请求方法
      */
-    request(query?: string, variables?: {}, options?: {
+    request(uri?: string, query?: string, variables?: {}, options?: {
         headers: {};
         baseURL: string;
     }): Promise<unknown>;

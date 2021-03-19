@@ -119,7 +119,8 @@ var GraphqlMiniApp = /** @class */ (function () {
     /**
      * 请求方法
      */
-    GraphqlMiniApp.prototype.request = function (query, variables, options) {
+    GraphqlMiniApp.prototype.request = function (uri, query, variables, options) {
+        if (uri === void 0) { uri = ''; }
         if (query === void 0) { query = ''; }
         if (variables === void 0) { variables = {}; }
         if (options === void 0) { options = {
@@ -145,7 +146,7 @@ var GraphqlMiniApp = /** @class */ (function () {
                                 });
                                 //@ts-ignore
                                 _this.requestTask = wx.request({
-                                    url: config.baseURL === '' ? _this.url : config.baseURL,
+                                    url: config.baseURL === '' ? _this.url + uri : config.baseURL + uri,
                                     method: 'POST',
                                     data: JSON.stringify({
                                         query: query,
