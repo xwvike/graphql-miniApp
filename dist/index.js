@@ -48,7 +48,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gql = exports.GraphqlMiniApp = void 0;
-// @ts-nocheck
 var GraphqlMiniApp = /** @class */ (function () {
     /**
      * 通过new初始化graphql请求全局对象
@@ -62,7 +61,7 @@ var GraphqlMiniApp = /** @class */ (function () {
                 },
                 eject: function () {
                     _this.requestInterceptors = [];
-                    _this.requestInterceptorsonError = [];
+                    _this.requestInterceptorsError = [];
                 }
             },
             response: {
@@ -71,7 +70,7 @@ var GraphqlMiniApp = /** @class */ (function () {
                 },
                 eject: function () {
                     _this.responseInterceptors = [];
-                    _this.responseInterceptorsonError = [];
+                    _this.responseInterceptorsError = [];
                 }
             }
         };
@@ -80,20 +79,20 @@ var GraphqlMiniApp = /** @class */ (function () {
         this.errorHandler = errorHandler || undefined;
         this.requestTask = null;
         this.requestInterceptors = [];
-        this.requestInterceptorsonError = [];
+        this.requestInterceptorsError = [];
         this.responseInterceptors = [];
-        this.responseInterceptorsonError = [];
+        this.responseInterceptorsError = [];
     }
     GraphqlMiniApp.prototype._addInterceptors = function (fn, onError, type) {
         if (type === void 0) { type = ''; }
         switch (type) {
             case 'request':
                 this.requestInterceptors.push(fn);
-                this.requestInterceptorsonError.push(onError);
+                this.requestInterceptorsError.push(onError);
                 break;
             case 'response':
                 this.responseInterceptors.push(fn);
-                this.responseInterceptorsonError.push(onError);
+                this.responseInterceptorsError.push(onError);
                 break;
             default:
                 throw '未知拦截器类型';
@@ -132,18 +131,19 @@ var GraphqlMiniApp = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (typeof options.baseURL !== 'string') {
-                            throw '请传入正确的url类型';
-                        }
                         if (!this.url && options.baseURL === '') {
                             throw '缺少graphql请求url';
                         }
                         options = __assign(__assign({}, options), this.options);
                         return [4 /*yield*/, new Promise((function (resolve, reject) {
-                                var config = {};
+                                var config = {
+                                    baseURL: undefined,
+                                    headers: undefined
+                                };
                                 _this.requestInterceptors.forEach(function (item) {
                                     Object.assign(config, item(options));
                                 });
+                                //@ts-ignore
                                 _this.requestTask = wx.request({
                                     url: config.baseURL === '' ? _this.url : config.baseURL,
                                     method: 'POST',
@@ -154,14 +154,17 @@ var GraphqlMiniApp = /** @class */ (function () {
                                     header: config.headers,
                                     success: function (res) {
                                         if (res.statusCode === 200) {
-                                            var data_1 = {};
+                                            var data_1 = {
+                                                data: undefined
+                                            };
                                             _this.responseInterceptors.forEach(function (item) {
+                                                // @ts-ignore
                                                 Object.assign(data_1, item(res, resolve, reject));
                                             });
                                             resolve(data_1.data);
                                         }
                                         else {
-                                            _this.responseInterceptorsonError.forEach(function (item) {
+                                            _this.responseInterceptorsError.forEach(function (item) {
                                                 item(res);
                                             });
                                             if (_this.errorHandler) {
@@ -172,12 +175,12 @@ var GraphqlMiniApp = /** @class */ (function () {
                                     },
                                     fail: function (err) {
                                         if (err.errMsg.indexOf('request:fail') >= 0) {
-                                            _this.requestInterceptorsonError.forEach(function (item) {
+                                            _this.requestInterceptorsError.forEach(function (item) {
                                                 item(err);
                                             });
                                         }
                                         else {
-                                            _this.responseInterceptorsonError.forEach(function (item) {
+                                            _this.responseInterceptorsError.forEach(function (item) {
                                                 item(err);
                                             });
                                         }

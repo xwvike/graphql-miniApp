@@ -1,19 +1,39 @@
+interface RequestInterceptorsFunction {
+    <T>(config: T): T;
+}
+interface RequestInterceptorsErrorFunction {
+    (error: object): (object | any);
+}
+interface ResponseInterceptorsFunction {
+    (data: any, resolve: Promise<any>, reject: Promise<any>): (Promise<any> | any);
+}
+interface ResponseInterceptorsErrorFunction {
+    (error: object): (object | void);
+}
 export declare class GraphqlMiniApp {
     interceptors: {
         request: {
-            use: (fn: any, onError: any) => void;
+            use: (fn: RequestInterceptorsFunction, onError: RequestInterceptorsErrorFunction) => void;
             eject: () => void;
         };
         response: {
-            use: (fn: any, onError: any) => void;
+            use: (fn: ResponseInterceptorsFunction, onError: ResponseInterceptorsErrorFunction) => void;
             eject: () => void;
         };
     };
+    private readonly url;
+    private readonly options;
+    private readonly errorHandler;
+    private requestTask;
+    private requestInterceptors;
+    private requestInterceptorsError;
+    private responseInterceptors;
+    private responseInterceptorsError;
     /**
      * 通过new初始化graphql请求全局对象
      */
-    constructor(url: any, options: any, errorHandler: any);
-    _addInterceptors(fn: any, onError: any, type?: string): void;
+    constructor(url: string, options: any, errorHandler: any);
+    private _addInterceptors;
     /**
      * 取消监听 HTTP Response Header 事件
      */
@@ -37,4 +57,5 @@ export declare class GraphqlMiniApp {
 /**
  * 定义graphql请求对象
  */
-export declare function gql(chunks: any): any;
+export declare function gql(chunks: string[]): string;
+export {};
