@@ -119,50 +119,58 @@ var GraphqlMiniApp = /** @class */ (function () {
     /**
      * 请求方法
      */
-    GraphqlMiniApp.prototype.request = function (uri, query, variables, options) {
-        if (uri === void 0) { uri = ''; }
-        if (query === void 0) { query = ''; }
-        if (variables === void 0) { variables = {}; }
-        if (options === void 0) { options = {
-            headers: {},
-            baseURL: ''
-        }; }
+    GraphqlMiniApp.prototype.request = function (options) {
         return __awaiter(this, void 0, void 0, function () {
+            var newOptions;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (!this.url && options.baseURL === '') {
-                            throw '缺少graphql请求url';
+                            throw '缺少请求url';
                         }
-                        options = __assign(__assign({}, options), this.options);
+                        newOptions = __assign(__assign({}, this.options), options);
                         return [4 /*yield*/, new Promise((function (resolve, reject) {
-                                var config = {
-                                    baseURL: undefined,
-                                    headers: undefined
+                                var allData = {
+                                    baseURL: "",
+                                    method: 'GET',
+                                    headers: undefined,
+                                    query: "",
+                                    mutation: "",
+                                    uri: "",
+                                    variables: undefined
                                 };
-                                _this.requestInterceptors.forEach(function (item) {
-                                    Object.assign(config, item(options));
-                                });
+                                if (_this.requestInterceptors.length >= 1) {
+                                    _this.requestInterceptors.forEach(function (item) {
+                                        Object.assign(allData, item(newOptions));
+                                    });
+                                }
+                                else {
+                                    allData = __assign(__assign({}, allData), newOptions);
+                                }
+                                var payload = null;
+                                if (allData.graphql) {
+                                    payload = JSON.stringify({
+                                        query: allData.query === "" ? allData.mutation : allData.query,
+                                        variables: allData.variables
+                                    });
+                                }
+                                else {
+                                    payload = allData.data;
+                                }
                                 //@ts-ignore
                                 _this.requestTask = wx.request({
-                                    url: config.baseURL === '' ? _this.url + uri : config.baseURL + uri,
-                                    method: 'POST',
-                                    data: JSON.stringify({
-                                        query: query,
-                                        variables: variables
-                                    }),
-                                    header: config.headers,
+                                    url: allData.baseURL === '' ? _this.url + allData.uri : allData.baseURL + allData.uri,
+                                    method: allData.method,
+                                    data: payload,
+                                    header: allData.headers,
                                     success: function (res) {
                                         if (res.statusCode === 200) {
-                                            var data_1 = {
-                                                data: undefined
-                                            };
                                             _this.responseInterceptors.forEach(function (item) {
                                                 // @ts-ignore
-                                                Object.assign(data_1, item(res, resolve, reject));
+                                                Object.assign(res, item(res, resolve, reject));
                                             });
-                                            resolve(data_1.data);
+                                            resolve(res);
                                         }
                                         else {
                                             _this.responseInterceptorsError.forEach(function (item) {
@@ -189,6 +197,10 @@ var GraphqlMiniApp = /** @class */ (function () {
                                             _this.errorHandler(err);
                                         }
                                         reject(err);
+                                    },
+                                    complete: function (res) {
+                                        //@ts-ignore
+                                        wx.hideLoading();
                                     }
                                 });
                             }))];

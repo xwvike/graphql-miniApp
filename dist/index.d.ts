@@ -1,5 +1,8 @@
+interface OnHandleErrorFunction {
+    (error: object): never;
+}
 interface RequestInterceptorsFunction {
-    <T>(config: T): T;
+    (config: object): object;
 }
 interface RequestInterceptorsErrorFunction {
     (error: object): (object | any);
@@ -9,6 +12,19 @@ interface ResponseInterceptorsFunction {
 }
 interface ResponseInterceptorsErrorFunction {
     (error: object): (object | void);
+}
+interface graphqlOption {
+    headers?: object;
+    graphql?: boolean;
+    method?: string;
+}
+interface requestOption extends graphqlOption {
+    uri: string;
+    baseURL?: string;
+    mutation?: string;
+    query?: string;
+    variables?: object;
+    data?: object;
 }
 export declare class GraphqlMiniApp {
     interceptors: {
@@ -32,7 +48,7 @@ export declare class GraphqlMiniApp {
     /**
      * 通过new初始化graphql请求全局对象
      */
-    constructor(url: string, options: any, errorHandler: any);
+    constructor(url: string, options: graphqlOption, errorHandler: OnHandleErrorFunction);
     private _addInterceptors;
     /**
      * 取消监听 HTTP Response Header 事件
@@ -49,10 +65,7 @@ export declare class GraphqlMiniApp {
     /**
      * 请求方法
      */
-    request(uri?: string, query?: string, variables?: {}, options?: {
-        headers: {};
-        baseURL: string;
-    }): Promise<unknown>;
+    request(options: requestOption): Promise<unknown>;
 }
 /**
  * 定义graphql请求对象

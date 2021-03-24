@@ -19,7 +19,7 @@ query {
         period
     }
 }`
-graphql.request('/graphql', query).then(res => {}).catch(err => {})
+graphql.request({uri:'/graphql',query}).then(res => {}).catch(err => {})
 ```
 
 ## 用法
@@ -28,8 +28,8 @@ graphql.request('/graphql', query).then(res => {}).catch(err => {})
 import { GraphqlMiniApp, gql } from 'graphql-miniapp';
 
 //创建一个Graphql客户端实例来发送请求
-const graphql = new GraphqlMiniApp('http://127.0.0.1:3000');
-graphql.request(uri, query, variables, options).then().catch()
+const graphql = new GraphqlMiniApp('http://127.0.0.1:3000',{headers,method,graphql});
+graphql.request({uri,query,variables,baseUrl,headers,method,graphql,data}).then().catch()
 ```
 
 ## 示例
@@ -52,7 +52,7 @@ query {
         period
     }
 }`
-graphql.request('/graphql', query).then(res => {}).catch(err => {})
+graphql.request({uri:'/graphql',query}).then(res => {}).catch(err => {})
 ```
 
 #### 为某个请求中单独设置请求头
@@ -61,7 +61,7 @@ graphql.request('/graphql', query).then(res => {}).catch(err => {})
 import { GraphqlMiniApp, gql } from 'graphql-miniapp';
 
 const graphql = new GraphqlMiniApp(endPoint);
-graphql.request(uri, query, variables, { headers: { 'X-AUTH-TOKEN': 'TOKEN' } }).then().catch()
+graphql.request({uri, query, variables,  headers: { 'X-AUTH-TOKEN': 'TOKEN' } }).then().catch()
 ```
 
 #### 为某个请求单独设置请求地址
@@ -70,7 +70,7 @@ graphql.request(uri, query, variables, { headers: { 'X-AUTH-TOKEN': 'TOKEN' } })
 import { GraphqlMiniApp, gql } from 'graphql-miniapp';
 
 const graphql = new GraphqlMiniApp(endPoint);
-graphql.request(uri, query, variables, { baseURL: 'http://api.test.com' }).then().catch()
+graphql.request({uri, query, variables, baseURL: 'http://api.test.com' }).then().catch()
 ```
 
 ### 使用GraphQL文档变量
@@ -92,7 +92,7 @@ const variables = {
   blueBall: 10
 }
 
-graphql.request(uri, query, variables).then().catch()
+graphql.request({ uri, query, variables }).then().catch()
 ```
 
 ### GraphQL Mutations
@@ -110,7 +110,7 @@ const variables = {
   redBall: [1, 2, 3, 4, 5, 6], blueBall: 12, date: "2021-03-19", perios: "100"
 }
 
-graphql.request(uri, mutation, variables).then().catch()
+graphql.request({ uri, mutation, variables }).then().catch()
 ```
 
 ### 使用拦截器
@@ -145,7 +145,7 @@ query {
         period
     }
 }`
-graphql.request('/graphql', query).then(res => {}).catch(err => {})
+graphql.request({uri:'/graphql', query}).then(res => {}).catch(err => {})
 ```
 
 #### 使用respons拦截器
@@ -177,7 +177,7 @@ query {
         period
     }
 }`
-graphql.request('/graphql', query).then(res => {}).catch(err => {})
+graphql.request({uri:'/graphql', query}).then(res => {}).catch(err => {})
 ```
 
 ### 微信requestTask方法
@@ -192,7 +192,7 @@ const graphql = new GraphqlMiniApp('http://127.0.0.1:3000');
 
 onClick(() => {
   graphql.abort()
-  graphql.request(uri, query, variables, options).then().catch()
+  graphql.request({ uri, query, variables }).then().catch()
 })
 
 ```
@@ -204,7 +204,7 @@ import { GraphqlMiniApp, gql } from 'graphql-miniapp';
 
 
 const graphql = new GraphqlMiniApp('http://127.0.0.1:3000');
-graphql.request(uri, query, variables, options).then().catch()
+graphql.request({ uri, query, variables }).then().catch()
 //onHeadersReceived会早于request完成
 graphql.onHeadersReceived(header => console.log(header))
 ```

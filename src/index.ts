@@ -3,7 +3,7 @@ interface OnHandleErrorFunction {
 }
 
 interface RequestInterceptorsFunction {
-    <T>(config: T): T
+    (config: object): object
 }
 
 interface RequestInterceptorsErrorFunction {
@@ -16,6 +16,21 @@ interface ResponseInterceptorsFunction {
 
 interface ResponseInterceptorsErrorFunction {
     (error: object): (object | void)
+}
+
+interface graphqlOption {
+    headers?: object,
+    graphql?: boolean,
+    method?: string,
+}
+
+interface requestOption extends graphqlOption {
+    uri: string,
+    baseURL?: string,
+    mutation?:string,
+    query?: string,
+    variables?: object,
+    data?: object,
 }
 
 export class GraphqlMiniApp {
@@ -40,7 +55,7 @@ export class GraphqlMiniApp {
         }
     }
     private readonly url: string;
-    private readonly options: object;
+    private readonly options: graphqlOption;
     private readonly errorHandler: OnHandleErrorFunction;
     private requestTask: any;
     private requestInterceptors: RequestInterceptorsFunction[];
@@ -51,7 +66,7 @@ export class GraphqlMiniApp {
     /**
      * 通过new初始化graphql请求全局对象
      */
-    constructor(url: string, options: any, errorHandler: any) {
+    constructor(url: string, options: graphqlOption, errorHandler: OnHandleErrorFunction) {
         this.url = url
         this.options = options || {}
         this.errorHandler = errorHandler || undefined
@@ -101,44 +116,53 @@ export class GraphqlMiniApp {
     /**
      * 请求方法
      */
-    async request(uri = '', query = '', variables = {}, options = {
-        headers: {},
-        baseURL: ''
-    }) {
+    async request(options: requestOption) {
         if (!this.url && options.baseURL === '') {
-            throw '缺少graphql请求url'
+            throw '缺少请求url'
         }
-        options = {
+        let newOptions = {
+            ...this.options,
             ...options,
-            ...this.options
         }
         return await new Promise(((resolve, reject) => {
-            const config = {
-                baseURL: undefined,
-                headers: undefined
+            let allData: requestOption = {
+                baseURL: "",
+                method: 'GET',
+                headers: undefined,
+                query: "",
+                mutation:"",
+                uri: "",
+                variables: undefined
             }
-            this.requestInterceptors.forEach(item => {
-                Object.assign(config, item(options))
-            })
+            if (this.requestInterceptors.length >= 1) {
+                this.requestInterceptors.forEach(item => {
+                    Object.assign(allData, item(newOptions))
+                })
+            } else {
+                allData = {...allData, ...newOptions}
+            }
+            let payload = null;
+            if (allData.graphql) {
+                payload = JSON.stringify({
+                    query: allData.query===""?allData.mutation:allData.query,
+                    variables: allData.variables
+                })
+            } else {
+                payload = allData.data;
+            }
             //@ts-ignore
             this.requestTask = wx.request({
-                url: config.baseURL === '' ? this.url+uri : config.baseURL+uri,
-                method: 'POST',
-                data: JSON.stringify({
-                    query,
-                    variables
-                }),
-                header: config.headers,
+                url: allData.baseURL === '' ? this.url + allData.uri : allData.baseURL + allData.uri,
+                method: allData.method,
+                data: payload,
+                header: allData.headers,
                 success: (res: any) => {
                     if (res.statusCode === 200) {
-                        const data = {
-                            data: undefined
-                        }
                         this.responseInterceptors.forEach(item => {
                             // @ts-ignore
-                            Object.assign(data, item(res, resolve, reject))
+                            Object.assign(res, item(res, resolve, reject))
                         })
-                        resolve(data.data)
+                        resolve(res)
                     } else {
                         this.responseInterceptorsError.forEach(item => {
                             item(res)
@@ -163,6 +187,10 @@ export class GraphqlMiniApp {
                         this.errorHandler(err)
                     }
                     reject(err)
+                },
+                complete: (res:any)=>{
+                    //@ts-ignore
+                    wx.hideLoading()
                 }
             })
         }))
