@@ -57,20 +57,42 @@ var GraphqlMiniApp = /** @class */ (function () {
         this.interceptors = {
             request: {
                 use: function (fn, onError) {
-                    _this._addInterceptors(fn, onError, 'request');
+                    return _this._addInterceptors(fn, onError, 'request');
                 },
-                eject: function () {
-                    _this.requestInterceptors = [];
-                    _this.requestInterceptorsError = [];
+                eject: function (obj) {
+                    if (!obj) {
+                        console.error('请传入拦截器对象');
+                        return;
+                    }
+                    var requestInterceptors = _this.requestInterceptors;
+                    var requestInterceptorsError = _this.requestInterceptorsError;
+                    requestInterceptors.splice(obj.index, 1, function (config) {
+                        return config;
+                    });
+                    requestInterceptorsError.splice(obj.errIndex, 1, function (err) {
+                    });
+                    _this.requestInterceptors = requestInterceptors;
+                    _this.requestInterceptorsError = requestInterceptorsError;
                 }
             },
             response: {
                 use: function (fn, onError) {
-                    _this._addInterceptors(fn, onError, 'response');
+                    return _this._addInterceptors(fn, onError, 'response');
                 },
-                eject: function () {
-                    _this.responseInterceptors = [];
-                    _this.responseInterceptorsError = [];
+                eject: function (obj) {
+                    if (!obj) {
+                        console.error('请传入拦截器对象');
+                        return;
+                    }
+                    var responseInterceptors = _this.responseInterceptors;
+                    var responseInterceptorsError = _this.responseInterceptorsError;
+                    responseInterceptors.splice(obj.index, 1, function (data, resolve, reject) {
+                        return data;
+                    });
+                    responseInterceptorsError.splice(obj.errIndex, 1, function (err) {
+                    });
+                    _this.responseInterceptors = responseInterceptors;
+                    _this.responseInterceptorsError = responseInterceptorsError;
                 }
             }
         };
@@ -157,13 +179,13 @@ var GraphqlMiniApp = /** @class */ (function () {
         if (type === void 0) { type = ''; }
         switch (type) {
             case 'request':
-                this.requestInterceptors = [fn];
-                this.requestInterceptorsError = [onError];
-                break;
+                var requestIndex = this.requestInterceptors.push(fn);
+                var requestErrIndex = this.requestInterceptorsError.push(onError);
+                return { index: requestIndex - 1, errIndex: requestErrIndex - 1 };
             case 'response':
-                this.responseInterceptors = [fn];
-                this.responseInterceptorsError = [onError];
-                break;
+                var responseIndex = this.responseInterceptors.push(fn);
+                var responseErrIndex = this.responseInterceptorsError.push(onError);
+                return { index: responseIndex - 1, errIndex: responseErrIndex - 1 };
             default:
                 throw '未知拦截器类型';
         }

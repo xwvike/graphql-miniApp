@@ -29,12 +29,18 @@ interface requestOption extends graphqlOption {
 export declare class GraphqlMiniApp {
     interceptors: {
         request: {
-            use: (fn: RequestInterceptorsFunction, onError: RequestInterceptorsErrorFunction) => void;
-            eject: () => void;
+            use: (fn: RequestInterceptorsFunction, onError: RequestInterceptorsErrorFunction) => {
+                index: number;
+                errIndex: number;
+            };
+            eject: (obj: any) => void;
         };
         response: {
-            use: (fn: ResponseInterceptorsFunction, onError: ResponseInterceptorsErrorFunction) => void;
-            eject: () => void;
+            use: (fn: ResponseInterceptorsFunction, onError: ResponseInterceptorsErrorFunction) => {
+                index: number;
+                errIndex: number;
+            };
+            eject: (obj: any) => void;
         };
     };
     private readonly url;

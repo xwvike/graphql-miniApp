@@ -37,20 +37,42 @@ export class GraphqlMiniApp {
     public interceptors = {
         request: {
             use: (fn: RequestInterceptorsFunction, onError: RequestInterceptorsErrorFunction) => {
-                this._addInterceptors(fn, onError, 'request')
+                return this._addInterceptors(fn, onError, 'request')
             },
-            eject: () => {
-                this.requestInterceptors = [];
-                this.requestInterceptorsError = [];
+            eject: (obj: any) => {
+                if (!obj) {
+                    console.error('请传入拦截器对象');
+                    return;
+                }
+                let requestInterceptors = this.requestInterceptors;
+                let requestInterceptorsError = this.requestInterceptorsError;
+                requestInterceptors.splice(obj.index, 1, config => {
+                    return config
+                })
+                requestInterceptorsError.splice(obj.errIndex, 1, err => {
+                })
+                this.requestInterceptors = requestInterceptors;
+                this.requestInterceptorsError = requestInterceptorsError;
             }
         },
         response: {
             use: (fn: ResponseInterceptorsFunction, onError: ResponseInterceptorsErrorFunction) => {
-                this._addInterceptors(<RequestInterceptorsFunction>fn, onError, 'response')
+                return this._addInterceptors(<RequestInterceptorsFunction>fn, onError, 'response')
             },
-            eject: () => {
-                this.responseInterceptors = [];
-                this.responseInterceptorsError = [];
+            eject: (obj: any) => {
+                if (!obj) {
+                    console.error('请传入拦截器对象');
+                    return;
+                }
+                let responseInterceptors = this.responseInterceptors;
+                let responseInterceptorsError = this.responseInterceptorsError;
+                responseInterceptors.splice(obj.index, 1, (data, resolve, reject) => {
+                    return data
+                })
+                responseInterceptorsError.splice(obj.errIndex, 1, (err) => {
+                })
+                this.responseInterceptors = responseInterceptors;
+                this.responseInterceptorsError = responseInterceptorsError;
             }
         }
     }
@@ -135,13 +157,13 @@ export class GraphqlMiniApp {
     private _addInterceptors(fn: RequestInterceptorsFunction, onError: RequestInterceptorsErrorFunction, type = '') {
         switch (type) {
             case 'request':
-                this.requestInterceptors = [fn]
-                this.requestInterceptorsError = [onError]
-                break
+                let requestIndex = this.requestInterceptors.push(fn)
+                let requestErrIndex = this.requestInterceptorsError.push(onError)
+                return {index: requestIndex - 1, errIndex: requestErrIndex - 1}
             case 'response':
-                this.responseInterceptors = [fn]
-                this.responseInterceptorsError = [onError]
-                break
+                let responseIndex = this.responseInterceptors.push(fn)
+                let responseErrIndex = this.responseInterceptorsError.push(onError)
+                return {index: responseIndex - 1, errIndex: responseErrIndex - 1}
             default:
                 throw '未知拦截器类型'
         }
@@ -185,7 +207,7 @@ export class GraphqlMiniApp {
                 method: 'GET',
                 headers: undefined,
                 query: "",
-                graphql:true,
+                graphql: true,
                 mutation: "",
                 uri: "",
                 variables: undefined

@@ -179,6 +179,20 @@ query {
 }`
 graphql.request({uri:'/graphql', query}).then(res => {}).catch(err => {})
 ```
+#### 移除拦截器
+```js
+import { GraphqlMiniApp, gql } from 'graphql-miniapp';
+
+const baseURL = 'http://127.0.0.1:3000';
+const graphql = new GraphqlMiniApp(baseURL);
+
+const firstInterceptor = graphql.interceptors.request.use((config)=>{return config})
+
+graphql.request({uri:'/graphql'}).then(res => {}).catch(err => {})
+
+graphql.interceptors.request.eject(firstInterceptor)
+
+```
 
 ### 微信requestTask方法
 
