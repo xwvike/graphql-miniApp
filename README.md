@@ -19,7 +19,7 @@ query {
         period
     }
 }`
-graphql.request({uri:'/graphql',query}).then(res => {}).catch(err => {})
+graphql.request({ uri: '/graphql', query }).then(res => {}).catch(err => {})
 ```
 
 ## 用法
@@ -28,8 +28,8 @@ graphql.request({uri:'/graphql',query}).then(res => {}).catch(err => {})
 import { GraphqlMiniApp, gql } from 'graphql-miniapp';
 
 //创建一个Graphql客户端实例来发送请求
-const graphql = new GraphqlMiniApp('http://127.0.0.1:3000',{headers,method,graphql});
-graphql.request({uri,query,variables,baseUrl,headers,method,graphql,data}).then().catch()
+const graphql = new GraphqlMiniApp('http://127.0.0.1:3000', { headers, method, graphql });
+graphql.request({ uri, query, variables, baseUrl, headers, method, graphql, data }).then().catch()
 ```
 
 ## 示例
@@ -52,7 +52,7 @@ query {
         period
     }
 }`
-graphql.request({uri:'/graphql',query}).then(res => {}).catch(err => {})
+graphql.request({ uri: '/graphql', query }).then(res => {}).catch(err => {})
 ```
 
 #### 为某个请求中单独设置请求头
@@ -61,7 +61,7 @@ graphql.request({uri:'/graphql',query}).then(res => {}).catch(err => {})
 import { GraphqlMiniApp, gql } from 'graphql-miniapp';
 
 const graphql = new GraphqlMiniApp(endPoint);
-graphql.request({uri, query, variables,  headers: { 'X-AUTH-TOKEN': 'TOKEN' } }).then().catch()
+graphql.request({ uri, query, variables, headers: { 'X-AUTH-TOKEN': 'TOKEN' } }).then().catch()
 ```
 
 #### 为某个请求单独设置请求地址
@@ -70,7 +70,7 @@ graphql.request({uri, query, variables,  headers: { 'X-AUTH-TOKEN': 'TOKEN' } })
 import { GraphqlMiniApp, gql } from 'graphql-miniapp';
 
 const graphql = new GraphqlMiniApp(endPoint);
-graphql.request({uri, query, variables, baseURL: 'http://api.test.com' }).then().catch()
+graphql.request({ uri, query, variables, baseURL: 'http://api.test.com' }).then().catch()
 ```
 
 ### 使用GraphQL文档变量
@@ -129,13 +129,13 @@ const graphql = new GraphqlMiniApp(baseURL, {
 
 graphql.interceptors.request.use(function (config) {
   config.headers['X-auth-token'] = 'interceptors'
+  //方法内部会自动取消无需wx.hideloading()
   wx.showLoading({
     title: '请求中……',
   })
   return config
 }, function (err) {
-  //拦截器中的错误处理会先于request方法捕获到请求错误
-  wx.hideLoading()
+  //request错误拦截器会捕捉request:fail 失败 ，通常为客户端请求错误
   console.log('请求出错了', err)
 })
 
@@ -145,7 +145,7 @@ query {
         period
     }
 }`
-graphql.request({uri:'/graphql', query}).then(res => {}).catch(err => {})
+graphql.request({ uri: '/graphql', query }).then(res => {}).catch(err => {})
 ```
 
 #### 使用respons拦截器
@@ -160,14 +160,13 @@ const graphql = new GraphqlMiniApp(baseURL, {
   }
 });
 
-//拦截器会在数据返回之前获取数据，并捕获错误。
 graphql.interceptors.response.use(function (data, resolve, reject) {
-  wx.hideLoading()
   if (data.data.code != 0) {
     reject({ err: 'code error' })
   }
   return data
 }, function (err) {
+  //response错误拦截会捕捉request:ok 失败，通常为服务端接口错误
   console.log('结果出错了', err)
 })
 
@@ -177,20 +176,22 @@ query {
         period
     }
 }`
-graphql.request({uri:'/graphql', query}).then(res => {}).catch(err => {})
+graphql.request({ uri: '/graphql', query }).then(res => {}).catch(err => {})
 ```
+
 #### 移除拦截器
+
 ```js
-import { GraphqlMiniApp, gql } from 'graphql-miniapp';
+import { GraphqlMiniApp } from 'graphql-miniapp';
 
 const baseURL = 'http://127.0.0.1:3000';
 const graphql = new GraphqlMiniApp(baseURL);
 
-const firstInterceptor = graphql.interceptors.request.use((config)=>{return config})
+const id = graphql.interceptors.request.use((config) => {return config})
 
-graphql.request({uri:'/graphql'}).then(res => {}).catch(err => {})
+graphql.request({ uri: '/graphql' }).then(res => {}).catch(err => {})
 
-graphql.interceptors.request.eject(firstInterceptor)
+graphql.interceptors.request.eject(id)
 
 ```
 
@@ -200,7 +201,6 @@ graphql.interceptors.request.eject(firstInterceptor)
 
 ```js
 import { GraphqlMiniApp, gql } from 'graphql-miniapp';
-
 
 const graphql = new GraphqlMiniApp('http://127.0.0.1:3000');
 
@@ -216,9 +216,46 @@ onClick(() => {
 ```js
 import { GraphqlMiniApp, gql } from 'graphql-miniapp';
 
-
 const graphql = new GraphqlMiniApp('http://127.0.0.1:3000');
 graphql.request({ uri, query, variables }).then().catch()
 //onHeadersReceived会早于request完成
 graphql.onHeadersReceived(header => console.log(header))
+```
+
+## api
+
+##### GraphqlMiniApp(url[,option])
+
+```js
+  //实例的请求根地址
+url:'http://github.com'
+{
+  //是否为graphql请求提供支持如果true 则不读取 config中data中的值。
+  graphql:true
+  //实例的默认请求类型
+  method:'POST'
+  //实例请求头
+  headers:{}
+}
+```
+#####request(config)
+```js
+{
+  //请求接口
+  uri:'/graphql'
+  //请求根路径
+  baseURL:'http:/github.com'
+  //请求类型
+  method:'POST'
+  //请求头
+  headers:{}
+  //graphql query查询语句
+  query:''
+  //graphql 文档变量
+  variables:{}
+  //非graphql 请求数据对象
+  data:{}
+  //graphql mutation语句
+  mutation:''
+}
 ```
