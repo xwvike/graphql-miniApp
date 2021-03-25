@@ -3,7 +3,7 @@ interface OnHandleErrorFunction {
 }
 
 interface RequestInterceptorsFunction {
-    (config: object): object
+    <T>(config: T): T
 }
 
 interface RequestInterceptorsErrorFunction {
@@ -11,7 +11,7 @@ interface RequestInterceptorsErrorFunction {
 }
 
 interface ResponseInterceptorsFunction {
-    (data: any, resolve: Promise<any>, reject: Promise<any>): (Promise<any> | any)
+    <T>(data: T, resolve: Promise<any>, reject: Promise<any>): T
 }
 
 interface ResponseInterceptorsErrorFunction {
@@ -27,7 +27,7 @@ interface graphqlOption {
 interface requestOption extends graphqlOption {
     uri: string,
     baseURL?: string,
-    mutation?:string,
+    mutation?: string,
     query?: string,
     variables?: object,
     data?: object,
@@ -75,17 +75,72 @@ export class GraphqlMiniApp {
         this.requestInterceptorsError = []
         this.responseInterceptors = []
         this.responseInterceptorsError = []
+
+        let isShowLoading = false;
+        let isShowToast = false;
+        // @ts-ignore
+        const {showLoading, hideLoading, showToast, hideToast} = wx;
+        // @ts-ignore
+        Object.defineProperty(wx, 'showLoading', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value(...param: any[]) {
+                if (isShowToast) {
+                    return;
+                }
+                isShowLoading = true;
+                return showLoading.apply(this, param);
+            }
+        });
+        // @ts-ignore
+        Object.defineProperty(wx, 'hideLoading', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value(...param: any[]) {
+                if (isShowToast) {
+                    return;
+                }
+                isShowLoading = false;
+                return hideLoading.apply(this, param);
+            }
+        });
+        // @ts-ignore
+        Object.defineProperty(wx, 'showToast', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value(...param: any[]) {
+                if (isShowLoading) {
+                    // @ts-ignore
+                    wx.hideLoading();
+                }
+                isShowToast = true;
+                return showToast.apply(this, param);
+            }
+        });
+        // @ts-ignore
+        Object.defineProperty(wx, 'hideToast', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value(...param: any[]) {
+                isShowToast = false;
+                return hideToast.apply(this, param);
+            }
+        });
     }
 
     private _addInterceptors(fn: RequestInterceptorsFunction, onError: RequestInterceptorsErrorFunction, type = '') {
         switch (type) {
             case 'request':
-                this.requestInterceptors.push(fn)
-                this.requestInterceptorsError.push(onError)
+                this.requestInterceptors = [fn]
+                this.requestInterceptorsError = [onError]
                 break
             case 'response':
-                this.responseInterceptors.push(fn)
-                this.responseInterceptorsError.push(onError)
+                this.responseInterceptors = [fn]
+                this.responseInterceptorsError = [onError]
                 break
             default:
                 throw '未知拦截器类型'
@@ -130,7 +185,8 @@ export class GraphqlMiniApp {
                 method: 'GET',
                 headers: undefined,
                 query: "",
-                mutation:"",
+                graphql:true,
+                mutation: "",
                 uri: "",
                 variables: undefined
             }
@@ -144,7 +200,7 @@ export class GraphqlMiniApp {
             let payload = null;
             if (allData.graphql) {
                 payload = JSON.stringify({
-                    query: allData.query===""?allData.mutation:allData.query,
+                    query: allData.query === "" ? allData.mutation : allData.query,
                     variables: allData.variables
                 })
             } else {
@@ -158,15 +214,19 @@ export class GraphqlMiniApp {
                 header: allData.headers,
                 success: (res: any) => {
                     if (res.statusCode === 200) {
-                        this.responseInterceptors.forEach(item => {
-                            // @ts-ignore
-                            Object.assign(res, item(res, resolve, reject))
-                        })
+                        if (this.responseInterceptors.length >= 1) {
+                            this.responseInterceptors.forEach(item => {
+                                // @ts-ignore
+                                Object.assign(res, item(res, resolve, reject))
+                            })
+                        }
                         resolve(res)
                     } else {
-                        this.responseInterceptorsError.forEach(item => {
-                            item(res)
-                        })
+                        if (this.responseInterceptorsError.length >= 1 && this.responseInterceptorsError[0] !== undefined) {
+                            this.responseInterceptorsError.forEach(item => {
+                                item(res)
+                            })
+                        }
                         if (this.errorHandler) {
                             this.errorHandler(res)
                         }
@@ -174,11 +234,11 @@ export class GraphqlMiniApp {
                     }
                 },
                 fail: (err: any) => {
-                    if (err.errMsg.indexOf('request:fail') >= 0) {
+                    if (err.errMsg.indexOf('request:fail') >= 0 && this.requestInterceptorsError.length >= 1 && this.requestInterceptorsError[0] !== undefined) {
                         this.requestInterceptorsError.forEach(item => {
                             item(err)
                         })
-                    } else {
+                    } else if (this.responseInterceptorsError.length >= 1 && this.responseInterceptorsError[0] !== undefined) {
                         this.responseInterceptorsError.forEach(item => {
                             item(err)
                         })
@@ -188,7 +248,7 @@ export class GraphqlMiniApp {
                     }
                     reject(err)
                 },
-                complete: (res:any)=>{
+                complete: (res: any) => {
                     //@ts-ignore
                     wx.hideLoading()
                 }

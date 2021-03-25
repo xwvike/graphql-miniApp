@@ -82,17 +82,87 @@ var GraphqlMiniApp = /** @class */ (function () {
         this.requestInterceptorsError = [];
         this.responseInterceptors = [];
         this.responseInterceptorsError = [];
+        var isShowLoading = false;
+        var isShowToast = false;
+        // @ts-ignore
+        var showLoading = wx.showLoading, hideLoading = wx.hideLoading, showToast = wx.showToast, hideToast = wx.hideToast;
+        // @ts-ignore
+        Object.defineProperty(wx, 'showLoading', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: function () {
+                var param = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    param[_i] = arguments[_i];
+                }
+                if (isShowToast) {
+                    return;
+                }
+                isShowLoading = true;
+                return showLoading.apply(this, param);
+            }
+        });
+        // @ts-ignore
+        Object.defineProperty(wx, 'hideLoading', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: function () {
+                var param = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    param[_i] = arguments[_i];
+                }
+                if (isShowToast) {
+                    return;
+                }
+                isShowLoading = false;
+                return hideLoading.apply(this, param);
+            }
+        });
+        // @ts-ignore
+        Object.defineProperty(wx, 'showToast', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: function () {
+                var param = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    param[_i] = arguments[_i];
+                }
+                if (isShowLoading) {
+                    // @ts-ignore
+                    wx.hideLoading();
+                }
+                isShowToast = true;
+                return showToast.apply(this, param);
+            }
+        });
+        // @ts-ignore
+        Object.defineProperty(wx, 'hideToast', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: function () {
+                var param = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    param[_i] = arguments[_i];
+                }
+                isShowToast = false;
+                return hideToast.apply(this, param);
+            }
+        });
     }
     GraphqlMiniApp.prototype._addInterceptors = function (fn, onError, type) {
         if (type === void 0) { type = ''; }
         switch (type) {
             case 'request':
-                this.requestInterceptors.push(fn);
-                this.requestInterceptorsError.push(onError);
+                this.requestInterceptors = [fn];
+                this.requestInterceptorsError = [onError];
                 break;
             case 'response':
-                this.responseInterceptors.push(fn);
-                this.responseInterceptorsError.push(onError);
+                this.responseInterceptors = [fn];
+                this.responseInterceptorsError = [onError];
                 break;
             default:
                 throw '未知拦截器类型';
@@ -136,6 +206,7 @@ var GraphqlMiniApp = /** @class */ (function () {
                                     method: 'GET',
                                     headers: undefined,
                                     query: "",
+                                    graphql: true,
                                     mutation: "",
                                     uri: "",
                                     variables: undefined
@@ -166,16 +237,20 @@ var GraphqlMiniApp = /** @class */ (function () {
                                     header: allData.headers,
                                     success: function (res) {
                                         if (res.statusCode === 200) {
-                                            _this.responseInterceptors.forEach(function (item) {
-                                                // @ts-ignore
-                                                Object.assign(res, item(res, resolve, reject));
-                                            });
+                                            if (_this.responseInterceptors.length >= 1) {
+                                                _this.responseInterceptors.forEach(function (item) {
+                                                    // @ts-ignore
+                                                    Object.assign(res, item(res, resolve, reject));
+                                                });
+                                            }
                                             resolve(res);
                                         }
                                         else {
-                                            _this.responseInterceptorsError.forEach(function (item) {
-                                                item(res);
-                                            });
+                                            if (_this.responseInterceptorsError.length >= 1 && _this.responseInterceptorsError[0] !== undefined) {
+                                                _this.responseInterceptorsError.forEach(function (item) {
+                                                    item(res);
+                                                });
+                                            }
                                             if (_this.errorHandler) {
                                                 _this.errorHandler(res);
                                             }
@@ -183,12 +258,12 @@ var GraphqlMiniApp = /** @class */ (function () {
                                         }
                                     },
                                     fail: function (err) {
-                                        if (err.errMsg.indexOf('request:fail') >= 0) {
+                                        if (err.errMsg.indexOf('request:fail') >= 0 && _this.requestInterceptorsError.length >= 1 && _this.requestInterceptorsError[0] !== undefined) {
                                             _this.requestInterceptorsError.forEach(function (item) {
                                                 item(err);
                                             });
                                         }
-                                        else {
+                                        else if (_this.responseInterceptorsError.length >= 1 && _this.responseInterceptorsError[0] !== undefined) {
                                             _this.responseInterceptorsError.forEach(function (item) {
                                                 item(err);
                                             });

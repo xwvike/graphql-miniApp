@@ -2,13 +2,13 @@ interface OnHandleErrorFunction {
     (error: object): never;
 }
 interface RequestInterceptorsFunction {
-    (config: object): object;
+    <T>(config: T): T;
 }
 interface RequestInterceptorsErrorFunction {
     (error: object): (object | any);
 }
 interface ResponseInterceptorsFunction {
-    (data: any, resolve: Promise<any>, reject: Promise<any>): (Promise<any> | any);
+    <T>(data: T, resolve: Promise<any>, reject: Promise<any>): T;
 }
 interface ResponseInterceptorsErrorFunction {
     (error: object): (object | void);

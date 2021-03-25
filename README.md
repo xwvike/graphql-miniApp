@@ -3,7 +3,7 @@
 ## 安装
 
 ```sh
-npm add graphql-miniapp
+npm i graphql-miniapp
 ```
 
 ## 快速开始
