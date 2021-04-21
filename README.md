@@ -259,3 +259,8 @@ url:'http://github.com'
   mutation:''
 }
 ```
+
+#####mini.js /src/mini.ts
+```js
+//移除了graphql的相关参数，其余使用方法和参数不变。
+```

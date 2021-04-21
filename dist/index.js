@@ -48,10 +48,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gql = exports.GraphqlMiniApp = void 0;
-var GraphqlMiniApp = /** @class */ (function () {
-    /**
-     * 通过new初始化graphql请求全局对象
-     */
+var GraphqlMiniApp = (function () {
     function GraphqlMiniApp(url, options, errorHandler) {
         var _this = this;
         this.interceptors = {
@@ -106,9 +103,7 @@ var GraphqlMiniApp = /** @class */ (function () {
         this.responseInterceptorsError = [];
         var isShowLoading = false;
         var isShowToast = false;
-        // @ts-ignore
         var showLoading = wx.showLoading, hideLoading = wx.hideLoading, showToast = wx.showToast, hideToast = wx.hideToast;
-        // @ts-ignore
         Object.defineProperty(wx, 'showLoading', {
             configurable: true,
             enumerable: true,
@@ -125,7 +120,6 @@ var GraphqlMiniApp = /** @class */ (function () {
                 return showLoading.apply(this, param);
             }
         });
-        // @ts-ignore
         Object.defineProperty(wx, 'hideLoading', {
             configurable: true,
             enumerable: true,
@@ -142,7 +136,6 @@ var GraphqlMiniApp = /** @class */ (function () {
                 return hideLoading.apply(this, param);
             }
         });
-        // @ts-ignore
         Object.defineProperty(wx, 'showToast', {
             configurable: true,
             enumerable: true,
@@ -153,14 +146,12 @@ var GraphqlMiniApp = /** @class */ (function () {
                     param[_i] = arguments[_i];
                 }
                 if (isShowLoading) {
-                    // @ts-ignore
                     wx.hideLoading();
                 }
                 isShowToast = true;
                 return showToast.apply(this, param);
             }
         });
-        // @ts-ignore
         Object.defineProperty(wx, 'hideToast', {
             configurable: true,
             enumerable: true,
@@ -190,27 +181,15 @@ var GraphqlMiniApp = /** @class */ (function () {
                 throw '未知拦截器类型';
         }
     };
-    /**
-     * 取消监听 HTTP Response Header 事件
-     */
     GraphqlMiniApp.prototype.offHeadersReceived = function (fn) {
         this.requestTask.offHeadersReceived(fn);
     };
-    /**
-     * 监听 HTTP Response Header 事件。会比请求完成事件更早
-     */
     GraphqlMiniApp.prototype.onHeadersReceived = function (fn) {
         this.requestTask.onHeadersReceived(fn);
     };
-    /**
-     * 调用abort（）取消最近的一次请求
-     */
     GraphqlMiniApp.prototype.abort = function () {
         this.requestTask.abort();
     };
-    /**
-     * 请求方法
-     */
     GraphqlMiniApp.prototype.request = function (options) {
         return __awaiter(this, void 0, void 0, function () {
             var newOptions;
@@ -222,7 +201,7 @@ var GraphqlMiniApp = /** @class */ (function () {
                             throw '缺少请求url';
                         }
                         newOptions = __assign(__assign({}, this.options), options);
-                        return [4 /*yield*/, new Promise((function (resolve, reject) {
+                        return [4, new Promise((function (resolve, reject) {
                                 var allData = {
                                     baseURL: "",
                                     method: 'GET',
@@ -251,7 +230,6 @@ var GraphqlMiniApp = /** @class */ (function () {
                                 else {
                                     payload = allData.data;
                                 }
-                                //@ts-ignore
                                 _this.requestTask = wx.request({
                                     url: allData.baseURL === '' ? _this.url + allData.uri : allData.baseURL + allData.uri,
                                     method: allData.method,
@@ -261,7 +239,6 @@ var GraphqlMiniApp = /** @class */ (function () {
                                         if (res.statusCode === 200) {
                                             if (_this.responseInterceptors.length >= 1) {
                                                 _this.responseInterceptors.forEach(function (item) {
-                                                    // @ts-ignore
                                                     Object.assign(res, item(res, resolve, reject));
                                                 });
                                             }
@@ -296,12 +273,11 @@ var GraphqlMiniApp = /** @class */ (function () {
                                         reject(err);
                                     },
                                     complete: function (res) {
-                                        //@ts-ignore
                                         wx.hideLoading();
                                     }
                                 });
                             }))];
-                    case 1: return [2 /*return*/, _a.sent()];
+                    case 1: return [2, _a.sent()];
                 }
             });
         });
@@ -309,9 +285,6 @@ var GraphqlMiniApp = /** @class */ (function () {
     return GraphqlMiniApp;
 }());
 exports.GraphqlMiniApp = GraphqlMiniApp;
-/**
- * 定义graphql请求对象
- */
 function gql(chunks) {
     return chunks[0];
 }
