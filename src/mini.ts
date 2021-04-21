@@ -74,7 +74,6 @@ export class Request {
     }
     private readonly url: string;
     private readonly options: Option;
-    private readonly errorHandler: OnHandleErrorFunction;
     private requestTask: any;
     private requestInterceptors: RequestInterceptorsFunction[];
     private requestInterceptorsError: RequestInterceptorsErrorFunction[];
@@ -84,10 +83,9 @@ export class Request {
     /**
      * 通过new初始化graphql请求全局对象
      */
-    constructor(url: string, options: Option, errorHandler: OnHandleErrorFunction) {
+    constructor(url: string, options: Option) {
         this.url = url
         this.options = options || {}
-        this.errorHandler = errorHandler || undefined
         this.requestTask = null
         this.requestInterceptors = []
         this.requestInterceptorsError = []
@@ -233,9 +231,6 @@ export class Request {
                                 item(res)
                             })
                         }
-                        if (this.errorHandler) {
-                            this.errorHandler(res)
-                        }
                         reject(res)
                     }
                 },
@@ -248,9 +243,6 @@ export class Request {
                         this.responseInterceptorsError.forEach(item => {
                             item(err)
                         })
-                    }
-                    if (this.errorHandler) {
-                        this.errorHandler(err)
                     }
                     reject(err)
                 },

@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc -d"
+    "build": "tsc -d&&uglifyjs dist/mini.js -m -o dist/requestClass.min.js"
   },
   "author": "xwvike",
   "repository": {
