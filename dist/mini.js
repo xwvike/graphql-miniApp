@@ -253,7 +253,6 @@ var Request = (function () {
                                         reject(err);
                                     },
                                     complete: function (res) {
-                                        wx.hideLoading();
                                     }
                                 });
                             }))];

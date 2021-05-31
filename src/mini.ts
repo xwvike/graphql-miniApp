@@ -248,7 +248,6 @@ export class Request {
                 },
                 complete: (res: any) => {
                     //@ts-ignore
-                    wx.hideLoading()
                 }
             })
         }))
