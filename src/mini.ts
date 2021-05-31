@@ -198,7 +198,7 @@ export class Request {
         return await new Promise(((resolve, reject) => {
             let allData: requestOption = {
                 baseURL: "",
-                method: 'GET',
+                method: 'POST',
                 headers: undefined,
                 uri: ""
             }
@@ -248,6 +248,7 @@ export class Request {
                 },
                 complete: (res: any) => {
                     //@ts-ignore
+                    wx.hideLoading()
                 }
             })
         }))

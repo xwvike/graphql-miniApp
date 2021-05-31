@@ -1,7 +1,3 @@
-interface OnHandleErrorFunction {
-    (error: object): never
-}
-
 interface RequestInterceptorsFunction {
     <T>(config: T): T
 }
@@ -30,10 +26,10 @@ interface requestOption extends graphqlOption {
     mutation?: string,
     query?: string,
     variables?: object,
-    data?: object,
+    data?: any,
 }
 
-export class GraphqlMiniApp {
+export class GWMA {
     public interceptors = {
         request: {
             use: (fn: RequestInterceptorsFunction, onError: RequestInterceptorsErrorFunction) => {
@@ -78,7 +74,6 @@ export class GraphqlMiniApp {
     }
     private readonly url: string;
     private readonly options: graphqlOption;
-    private readonly errorHandler: OnHandleErrorFunction;
     private requestTask: any;
     private requestInterceptors: RequestInterceptorsFunction[];
     private requestInterceptorsError: RequestInterceptorsErrorFunction[];
@@ -88,10 +83,9 @@ export class GraphqlMiniApp {
     /**
      * 通过new初始化graphql请求全局对象
      */
-    constructor(url: string, options: graphqlOption, errorHandler: OnHandleErrorFunction) {
+    constructor(url: string, options: graphqlOption) {
         this.url = url
         this.options = options || {}
-        this.errorHandler = errorHandler || undefined
         this.requestTask = null
         this.requestInterceptors = []
         this.requestInterceptorsError = []
@@ -195,7 +189,9 @@ export class GraphqlMiniApp {
      */
     async request(options: requestOption) {
         if (!this.url && options.baseURL === '') {
-            throw '缺少请求url'
+            // @ts-ignore
+            wx.hideLoading()
+            throw new Error('缺少请求根路径')
         }
         let newOptions = {
             ...this.options,
@@ -204,7 +200,7 @@ export class GraphqlMiniApp {
         return await new Promise(((resolve, reject) => {
             let allData: requestOption = {
                 baseURL: "",
-                method: 'GET',
+                method: 'POST',
                 headers: undefined,
                 query: "",
                 graphql: true,
@@ -219,12 +215,44 @@ export class GraphqlMiniApp {
             } else {
                 allData = {...allData, ...newOptions}
             }
-            let payload = null;
+            let payload:any;
             if (allData.graphql) {
-                payload = JSON.stringify({
-                    query: allData.query === "" ? allData.mutation : allData.query,
-                    variables: allData.variables
-                })
+                let obj = {}
+                let variablesBool = allData.variables === undefined;
+                let type = (allData.query === "" && allData.mutation === "") ? 'error' : allData.query === "" ? 'mutation' : 'query';
+                if (type === 'error') {
+                    // @ts-ignore
+                    wx.hideLoading()
+                    throw new Error('查询语句为空')
+                }
+                // @ts-ignore
+                const operationName = allData[type].trim().split('(')[0].split(' ')[1]
+                if (variablesBool) {
+                    if (type === 'query') {
+                        obj = {
+                            query: allData[type]
+                        }
+                    } else if (type === 'mutation') {
+                        obj = {
+                            mutation: allData[type]
+                        }
+                    }
+                } else {
+                    if (type === 'query') {
+                        obj = {
+                            query: allData[type],
+                            operationName,
+                            variables: allData['variables']
+                        }
+                    } else if (type === 'mutation') {
+                        obj = {
+                            mutation: allData[type],
+                            operationName,
+                            variables: allData['variables']
+                        }
+                    }
+                }
+                payload = {...obj};
             } else {
                 payload = allData.data;
             }
@@ -249,9 +277,6 @@ export class GraphqlMiniApp {
                                 item(res)
                             })
                         }
-                        if (this.errorHandler) {
-                            this.errorHandler(res)
-                        }
                         reject(res)
                     }
                 },
@@ -264,9 +289,6 @@ export class GraphqlMiniApp {
                         this.responseInterceptorsError.forEach(item => {
                             item(err)
                         })
-                    }
-                    if (this.errorHandler) {
-                        this.errorHandler(err)
                     }
                     reject(err)
                 },
