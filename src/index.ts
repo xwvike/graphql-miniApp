@@ -94,6 +94,7 @@ export class GWMA {
 
         let isShowLoading = false;
         let isShowToast = false;
+        let timeOut:any = undefined;
         // @ts-ignore
         const {showLoading, hideLoading, showToast, hideToast} = wx;
         // @ts-ignore
@@ -102,6 +103,8 @@ export class GWMA {
             enumerable: true,
             writable: true,
             value(...param: any[]) {
+                console.log(isShowToast,'isShowToast')
+                console.log(isShowLoading,'isShowLoading')
                 if (isShowToast) {
                     return;
                 }
@@ -128,14 +131,19 @@ export class GWMA {
             enumerable: true,
             writable: true,
             value(...param: any[]) {
+                clearInterval(timeOut)
                 if (isShowLoading) {
                     // @ts-ignore
                     wx.hideLoading();
                 }
                 isShowToast = true;
+                timeOut = setTimeout(()=>{
+                    isShowToast = false
+                },arguments[0].duration||2500)
                 return showToast.apply(this, param);
             }
         });
+
         // @ts-ignore
         Object.defineProperty(wx, 'hideToast', {
             configurable: true,
