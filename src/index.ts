@@ -103,8 +103,6 @@ export class GWMA {
             enumerable: true,
             writable: true,
             value(...param: any[]) {
-                console.log(isShowToast,'isShowToast')
-                console.log(isShowLoading,'isShowLoading')
                 if (isShowToast) {
                     return;
                 }
