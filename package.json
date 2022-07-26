@@ -1,16 +1,15 @@
 {
   "name": "graphql-miniapp",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/index.min.js",
   "scripts": {
-    "buildMini": "tsc -d&&uglifyjs dist/mini.js -m -o dist/requestClass.min.js",
-    "build": "tsc -d&&uglifyjs dist/index.js -m -o dist/GWMA.min.js"
+    "build": "babel src --out-dir dist&&uglifyjs dist/index.js -m -o dist/index.min.js"
   },
-  "author": "xwvike",
+  "author": "red-vest",
   "repository": {
     "type": "git",
-    "url": "https://github.com/XWVIKE/graphql-miniApp.git"
+    "url": "https://github.com/red-vest/graphql-miniApp.git"
   },
   "license": "MIT",
   "keywords": [
@@ -19,10 +18,14 @@
     "wechat"
   ],
   "bugs": {
-    "url": "https://github.com/XWVIKE/graphql-miniApp/issues"
+    "url": "https://github.com/red-vest/graphql-miniApp/issues"
   },
-  "homepage": "https://github.com/XWVIKE/graphql-miniApp",
+  "homepage": "https://github.com/red-vest/graphql-miniApp",
   "devDependencies": {
-    "typescript": "^4.2.3"
+    "uglify-js": "^3.16.3",
+    "@babel/cli": "^7.18.9",
+    "@babel/core": "^7.18.9",
+    "@babel/preset-env": "^7.18.9",
+    "babel-preset-es2015": "^6.24.1"
   }
 }
