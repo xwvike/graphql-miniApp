@@ -27,6 +27,7 @@ interface requestOption extends graphqlOption {
     query?: string,
     variables?: object,
     data?: any,
+    timeout?: number,
 }
 
 export class GWMA {
@@ -212,6 +213,7 @@ export class GWMA {
                 headers: undefined,
                 query: "",
                 graphql: true,
+                timeout:5000,
                 mutation: "",
                 uri: "",
                 variables: undefined
@@ -269,6 +271,7 @@ export class GWMA {
                 url: allData.baseURL === '' ? this.url + allData.uri : allData.baseURL + allData.uri,
                 method: allData.method,
                 data: payload,
+                timeout:allData.timeout,
                 header: allData.headers,
                 success: (res: any) => {
                     if (res.statusCode === 200) {
@@ -289,11 +292,7 @@ export class GWMA {
                     }
                 },
                 fail: (err: any) => {
-                    if (err.errMsg.indexOf('request:fail') >= 0 && this.requestInterceptorsError.length >= 1 && this.requestInterceptorsError[0] !== undefined) {
-                        this.requestInterceptorsError.forEach(item => {
-                            item(err)
-                        })
-                    } else if (this.responseInterceptorsError.length >= 1 && this.responseInterceptorsError[0] !== undefined) {
+                    if (this.responseInterceptorsError.length >= 1 && this.responseInterceptorsError[0] !== undefined) {
                         this.responseInterceptorsError.forEach(item => {
                             item(err)
                         })
