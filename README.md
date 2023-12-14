@@ -238,7 +238,7 @@ url:'http://github.com'
   headers:{}
 }
 ```
-#####request(config)
+##### request(config)
 ```js
 {
   //请求接口
@@ -260,7 +260,7 @@ url:'http://github.com'
 }
 ```
 
-#####mini.js /src/mini.ts
+##### mini.js /src/mini.ts
 ```js
 //移除了graphql的相关参数，其余使用方法和参数不变。
 ```
